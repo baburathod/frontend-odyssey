@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Life of a Developer</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --green: #00ff88;
+    --amber: #ffb800;
+    --red: #ff4455;
+    --blue: #4af;
+    --text: #e8e8f0;
+    --muted: #555570;
+    --border: #1e1e2e;
+    --mono: 'Space Mono', monospace;
+    --display: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── Custom Cursor ── */
+  #cursor {
+    position: fixed;
+    width: 12px; height: 12px;
+    background: var(--green);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, background 0.2s, width 0.2s, height 0.2s;
+    mix-blend-mode: difference;
+  }
+  #cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--green);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all 0.15s ease;
+    opacity: 0.5;
+  }
+
+  /* ── Progress Bar ── */
+  #progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--green), var(--amber));
+    z-index: 1000;
+    width: 0%;
+    transition: width 0.1s;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.2rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: var(--green);
+    letter-spacing: -0.02em;
+  }
+  .nav-logo span { color: var(--text); }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--green); }
+
+  /* ── Sections base ── */
+  section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 6rem 2rem;
+  }
+
+  /* ── Noise overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9990;
+    opacity: 0.4;
+  }
+
+  /* ══════════════════════════════
+     SECTION 1 – HERO
+  ══════════════════════════════ */
+  #hero {
+    flex-direction: column;
+    text-align: center;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, #0d2b1a 0%, var(--bg) 70%);
+  }
+
+  .terminal-loader {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--green);
+    margin-bottom: 3rem;
+    text-align: left;
+    display: inline-block;
+    opacity: 0;
+  }
+  .terminal-loader .line { display: block; margin-bottom: 0.3rem; }
+  .terminal-loader .prompt { color: var(--muted); }
+  .terminal-loader .cmd { color: var(--green); }
+  .terminal-loader .out { color: var(--amber); }
+  .terminal-loader .err { color: var(--red); }
+
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(3rem, 9vw, 8rem);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  .hero-title .line1 { display: block; color: var(--text); }
+  .hero-title .line2 { display: block; color: var(--green); }
+  .hero-title .line3 { display: block; color: var(--muted); font-size: 0.4em; letter-spacing: 0.08em; margin-top: 0.5rem; }
+
+  .hero-sub {
+    margin-top: 2rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    opacity: 0;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    opacity: 0;
+  }
+  .scroll-hint .arrow {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--muted), transparent);
+    animation: scrollArrow 1.5s ease-in-out infinite;
+  }
+  @keyframes scrollArrow {
+    0%, 100% { transform: scaleY(1); opacity: 0.5; }
+    50% { transform: scaleY(1.3); opacity: 1; }
+  }
+
+  /* Floating code blobs */
+  .float-code {
+    position: absolute;
+    font-size: 0.7rem;
+    color: var(--border);
+    font-family: var(--mono);
+    pointer-events: none;
+    user-select: none;
+    opacity: 0;
+  }
+
+  /* ══════════════════════════════
+     SECTION 2 – LEARNING HTML
+  ══════════════════════════════ */
+  #learning {
+    background: linear-gradient(135deg, #0a0a0f 0%, #0d1a2b 100%);
+  }
+  .section-inner {
+    max-width: 1100px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+  .section-inner.reverse { direction: rtl; }
+  .section-inner.reverse > * { direction: ltr; }
+
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 30px; height: 1px;
+    background: var(--green);
+    flex-shrink: 0;
+  }
+
+  .section-heading {
+    font-family: var(--display);
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+  }
+  .section-heading em {
+    font-style: normal;
+    color: var(--amber);
+  }
+
+  .section-body {
+    font-size: 0.85rem;
+    line-height: 1.9;
+    color: #999aaf;
+    margin-bottom: 2rem;
+  }
+
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .tag {
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+  .tag:hover { border-color: var(--amber); color: var(--amber); }
+
+  /* Code window */
+  .code-window {
+    background: #0c0c14;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+    opacity: 0;
+    transform: translateX(60px);
+  }
+  .code-window-bar {
+    background: #16161f;
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: var(--red); }
+  .dot-y { background: var(--amber); }
+  .dot-g { background: var(--green); }
+  .code-window-title {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .code-body {
+    padding: 1.5rem;
+    font-size: 0.78rem;
+    line-height: 1.8;
+    overflow: auto;
+  }
+  .code-body .kw { color: #c792ea; }
+  .code-body .str { color: var(--amber); }
+  .code-body .fn { color: var(--blue); }
+  .code-body .cm { color: var(--muted); font-style: italic; }
+  .code-body .tg { color: var(--green); }
+  .code-body .num { color: var(--red); }
+  .code-body .err-line {
+    background: rgba(255,68,85,0.1);
+    border-left: 2px solid var(--red);
+    padding-left: 0.5rem;
+    margin-left: -0.5rem;
+    display: block;
+  }
+
+  /* Text reveal */
+  .reveal-text { opacity: 0; transform: translateY(30px); }
+
+  /* ══════════════════════════════
+     SECTION 3 – DEBUGGING
+  ══════════════════════════════ */
+  #debugging {
+    background: radial-gradient(ellipse 90% 70% at 50% 50%, #1a0a0d 0%, var(--bg) 70%);
+    flex-direction: column;
+  }
+
+  .debug-container {
+    max-width: 900px;
+    width: 100%;
+  }
+
+  .error-terminal {
+    background: #0c0c14;
+    border: 1px solid rgba(255,68,85,0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 3rem;
+    box-shadow: 0 0 60px rgba(255,68,85,0.05), inset 0 0 40px rgba(255,68,85,0.03);
+  }
+  .error-terminal .code-window-bar { background: rgba(255,68,85,0.08); border-bottom-color: rgba(255,68,85,0.2); }
+  .error-line {
+    display: flex;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    border-bottom: 1px solid rgba(255,68,85,0.07);
+    gap: 1rem;
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  .error-line .ln { color: var(--muted); min-width: 25px; text-align: right; }
+  .error-line.e-type { color: var(--red); }
+  .error-line.e-file { color: var(--amber); }
+  .error-line.e-note { color: var(--blue); }
+  .error-line.e-ok { color: var(--green); }
+
+  .debug-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .stat-card .stat-num {
+    font-family: var(--display);
+    font-size: 2.5rem;
+    font-weight: 900;
+    display: block;
+  }
+  .stat-card:nth-child(1) .stat-num { color: var(--red); }
+  .stat-card:nth-child(2) .stat-num { color: var(--amber); }
+  .stat-card:nth-child(3) .stat-num { color: var(--green); }
+  .stat-card .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.3rem; }
+
+  /* ══════════════════════════════
+     SECTION 4 – DEADLINES & COFFEE
+  ══════════════════════════════ */
+  #deadlines {
+    background: linear-gradient(180deg, var(--bg) 0%, #0d1a0a 100%);
+  }
+
+  .timeline {
+    position: relative;
+    max-width: 700px;
+    width: 100%;
+    padding-left: 2rem;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--green), var(--amber), var(--red), transparent);
+  }
+  .tl-item {
+    position: relative;
+    padding: 0 0 3rem 2.5rem;
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -5px; top: 6px;
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    border: 2px solid var(--green);
+    background: var(--bg);
+    transition: background 0.3s;
+  }
+  .tl-item:nth-child(2)::before { border-color: var(--amber); }
+  .tl-item:nth-child(3)::before { border-color: var(--red); }
+  .tl-item:nth-child(4)::before { border-color: var(--blue); }
+  .tl-item:nth-child(5)::before { border-color: var(--green); }
+  .tl-item:hover::before { background: var(--green); }
+
+  .tl-time {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .tl-title {
+    font-family: var(--display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+  .tl-desc {
+    font-size: 0.8rem;
+    color: #888899;
+    line-height: 1.8;
+  }
+
+  /* Coffee meter */
+  .coffee-widget {
+    position: absolute;
+    right: 3rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  .coffee-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    writing-mode: vertical-lr;
+  }
+  .coffee-cup { font-size: 3rem; animation: steam 2s ease-in-out infinite; }
+  @keyframes steam {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-5px) rotate(3deg); }
+  }
+  .coffee-bar {
+    width: 6px;
+    height: 120px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .coffee-fill {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(to top, #6b3a1f, var(--amber));
+    border-radius: 3px;
+    transition: height 0.5s ease;
+  }
+
+  /* ══════════════════════════════
+     SECTION 5 – CONCLUSION / INSIGHT
+  ══════════════════════════════ */
+  #insight {
+    background: radial-gradient(ellipse 100% 80% at 50% 50%, #0a1a2b 0%, var(--bg) 80%);
+    flex-direction: column;
+  }
+
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    max-width: 1000px;
+    width: 100%;
+    margin-top: 3rem;
+  }
+  .insight-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.3s, transform 0.3s;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  .insight-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(0,255,136,0.06), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .insight-card:hover { border-color: var(--green); transform: translateY(-4px); }
+  .insight-card:hover::after { opacity: 1; }
+  .insight-card:nth-child(2) { border-color: rgba(255,184,0,0.15); }
+  .insight-card:nth-child(2):hover { border-color: var(--amber); }
+  .insight-card:nth-child(2)::after { background: radial-gradient(circle at 50% 0%, rgba(255,184,0,0.06), transparent 70%); }
+  .insight-card:nth-child(3) { border-color: rgba(68,170,255,0.15); }
+  .insight-card:nth-child(3):hover { border-color: var(--blue); }
+  .insight-card:nth-child(3)::after { background: radial-gradient(circle at 50% 0%, rgba(68,170,255,0.06), transparent 70%); }
+
+  .insight-icon { font-size: 2rem; margin-bottom: 1rem; display: block; }
+  .insight-title {
+    font-family: var(--display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.7rem;
+  }
+  .insight-text { font-size: 0.78rem; color: #888899; line-height: 1.8; }
+
+  /* ══════════════════════════════
+     SECTION 6 – CONCLUSION
+  ══════════════════════════════ */
+  #conclusion {
+    background: radial-gradient(ellipse 80% 60% at 50% 100%, #0d2b1a 0%, var(--bg) 70%);
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .conclusion-title {
+    font-family: var(--display);
+    font-size: clamp(2.5rem, 6vw, 6rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  .conclusion-title span { color: var(--green); }
+
+  .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .conclusion-sub {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    max-width: 500px;
+    line-height: 1.8;
+    opacity: 0;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 3rem;
+    justify-content: center;
+    opacity: 0;
+  }
+  .btn {
+    padding: 0.9rem 2rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--green);
+    color: #000;
+    border: 1px solid var(--green);
+    font-weight: 700;
+  }
+  .btn-primary:hover { background: transparent; color: var(--green); }
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-outline:hover { border-color: var(--text); }
+
+  /* Terminal final */
+  .final-terminal {
+    margin-top: 4rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: left;
+    display: inline-block;
+    opacity: 0;
+  }
+  .final-terminal span { display: block; margin-bottom: 0.2rem; }
+  .final-terminal .ok { color: var(--green); }
+  .final-terminal .warn { color: var(--amber); }
+
+  /* ══════════════════════════════
+     PARALLAX BG SHAPES
+  ══════════════════════════════ */
+  .parallax-shape {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.03;
+    font-family: var(--mono);
+    font-size: 12rem;
+    font-weight: 900;
+    color: var(--green);
+    user-select: none;
+    line-height: 1;
+  }
+
+  /* ══════════════════════════════
+     RESPONSIVE
+  ══════════════════════════════ */
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .section-inner { grid-template-columns: 1fr; gap: 3rem; }
+    .section-inner.reverse { direction: ltr; }
+    .debug-stats { grid-template-columns: 1fr 1fr; }
+    .insight-grid { grid-template-columns: 1fr; }
+    .coffee-widget { display: none; }
+    .timeline { padding-left: 1.5rem; }
+  }
+  @media (max-width: 600px) {
+    section { padding: 5rem 1.2rem; }
+    .debug-stats { grid-template-columns: 1fr; }
+    .btn-group { flex-direction: column; align-items: center; }
+  }
+
+  /* Horizontal scroll ticker */
+  .ticker-wrap {
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0.7rem 0;
+    background: var(--surface);
+  }
+  .ticker {
+    display: flex;
+    gap: 3rem;
+    white-space: nowrap;
+    animation: ticker 25s linear infinite;
+  }
+  .ticker-item {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .ticker-item span { color: var(--green); margin-right: 0.5rem; }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Glitch effect */
+  .glitch {
+    position: relative;
+  }
+  .glitch::before, .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(0 30%, 100% 30%, 100% 55%, 0 55%);
+  }
+  .glitch::before {
+    color: var(--red);
+    transform: translateX(-3px);
+    animation: glitch1 3s infinite;
+  }
+  .glitch::after {
+    color: var(--blue);
+    transform: translateX(3px);
+    animation: glitch2 3s infinite;
+  }
+  @keyframes glitch1 {
+    0%, 90%, 100% { transform: translateX(-3px); clip-path: polygon(0 30%, 100% 30%, 100% 55%, 0 55%); }
+    92% { transform: translateX(3px); clip-path: polygon(0 60%, 100% 60%, 100% 75%, 0 75%); }
+    94% { transform: translateX(-3px); clip-path: polygon(0 10%, 100% 10%, 100% 30%, 0 30%); }
+    96% { transform: translateX(0); }
+  }
+  @keyframes glitch2 {
+    0%, 88%, 100% { transform: translateX(3px); clip-path: polygon(0 45%, 100% 45%, 100% 65%, 0 65%); }
+    90% { transform: translateX(-3px); clip-path: polygon(0 20%, 100% 20%, 100% 45%, 0 45%); }
+    93% { transform: translateX(0); }
+  }
+
+  /* Loading screen */
+  #loader {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+  .loader-bar-wrap {
+    width: 300px;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .loader-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--amber));
+    width: 0%;
+    border-radius: 2px;
+  }
+  .loader-text {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+  .loader-logo {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--green);
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loader">
+  <div class="loader-logo">DEV.LIFE</div>
+  <div class="loader-bar-wrap">
+    <div class="loader-bar" id="loaderBar"></div>
+  </div>
+  <div class="loader-text" id="loaderText">npm install life --save</div>
+</div>
+
+<!-- Custom Cursor -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- Progress Bar -->
+<div id="progress"></div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">DEV<span>.LIFE</span></div>
+  <div class="nav-links">
+    <a href="#hero">Init</a>
+    <a href="#learning">Learn</a>
+    <a href="#debugging">Debug</a>
+    <a href="#deadlines">Deploy</a>
+    <a href="#insight">Insight</a>
+    <a href="#conclusion">Ship</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="parallax-shape" style="right:-5%; top:10%">{}</div>
+  <div class="parallax-shape" style="left:-3%; bottom:5%; color: var(--amber);">&lt;/&gt;</div>
+
+  <!-- Floating code snippets -->
+  <div class="float-code" style="top:15%; left:5%; transform: rotate(-8deg)">const dream = "Senior Dev";</div>
+  <div class="float-code" style="top:20%; right:6%; transform: rotate(5deg)">// TODO: fix everything</div>
+  <div class="float-code" style="bottom:20%; left:8%; transform: rotate(3deg)">while(bugs) fix();</div>
+  <div class="float-code" style="bottom:25%; right:5%; transform: rotate(-4deg)">git push --force</div>
+
+  <div style="display:flex; flex-direction:column; align-items:center; z-index:1;">
+    <div class="terminal-loader" id="terminalLoader">
+      <span class="line"><span class="prompt">$ </span><span class="cmd">node life.js</span></span>
+      <span class="line"><span class="out">▶  Loading developer experience...</span></span>
+      <span class="line"><span class="err">⚠  Warning: sleep.js not found</span></span>
+      <span class="line"><span class="out">✓  coffee.js loaded successfully</span></span>
+      <span class="line"><span class="prompt">$ </span><span class="cmd">_</span><span class="blink">▋</span></span>
+    </div>
+
+    <h1 class="hero-title glitch" data-text="THE LIFE OF A DEVELOPER">
+      <span class="line1">THE LIFE OF</span>
+      <span class="line2">A DEVELOPER</span>
+      <span class="line3">// an interactive experience</span>
+    </h1>
+
+    <p class="hero-sub">
+      From &lt;h1&gt;Hello World&lt;/h1&gt; to production outages — scroll to explore.
+    </p>
+  </div>
+
+  <div class="scroll-hint" id="scrollHint">
+    <span>Scroll</span>
+    <div class="arrow"></div>
+  </div>
+</section>
+
+<!-- Ticker -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span class="ticker-item"><span>✦</span>It works on my machine</span>
+    <span class="ticker-item"><span>✦</span>Have you tried turning it off and on again?</span>
+    <span class="ticker-item"><span>✦</span>404: Sleep Not Found</span>
+    <span class="ticker-item"><span>✦</span>// This code was written at 3am</span>
+    <span class="ticker-item"><span>✦</span>git commit -m "final_FINAL_v3"</span>
+    <span class="ticker-item"><span>✦</span>undefined is not a function</span>
+    <span class="ticker-item"><span>✦</span>It works on my machine</span>
+    <span class="ticker-item"><span>✦</span>Have you tried turning it off and on again?</span>
+    <span class="ticker-item"><span>✦</span>404: Sleep Not Found</span>
+    <span class="ticker-item"><span>✦</span>// This code was written at 3am</span>
+    <span class="ticker-item"><span>✦</span>git commit -m "final_FINAL_v3"</span>
+    <span class="ticker-item"><span>✦</span>undefined is not a function</span>
+  </div>
+</div>
+
+<!-- ══ LEARNING ══ -->
+<section id="learning">
+  <div class="section-inner">
+    <div>
+      <div class="section-label reveal-text">Chapter 01</div>
+      <h2 class="section-heading reveal-text">Learning <em>HTML</em><br>with pure<br>confidence</h2>
+      <p class="section-body reveal-text">
+        It starts innocently. You type &lt;h1&gt;Hello World&lt;/h1&gt; and feel like a god. 
+        "I could build Facebook," you whisper. The browser renders your text. 
+        You have no idea what you just started.
+      </p>
+      <div class="tag-cloud reveal-text">
+        <span class="tag">&lt;div&gt;</span>
+        <span class="tag">inline-block</span>
+        <span class="tag">center: margin auto</span>
+        <span class="tag">!important</span>
+        <span class="tag">float: left</span>
+        <span class="tag">why won't you center</span>
+      </div>
+    </div>
+    <div class="code-window" id="codeWindow1">
+      <div class="code-window-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <div class="code-window-title">index.html — my_first_website</div>
+      </div>
+      <div class="code-body">
+        <span class="tg">&lt;html&gt;</span><br>
+        <span class="tg">&lt;body&gt;</span><br>
+        &nbsp;&nbsp;<span class="tg">&lt;h1</span> <span class="kw">style</span>=<span class="str">"color: red"</span><span class="tg">&gt;</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Hello World!!!<br>
+        &nbsp;&nbsp;<span class="tg">&lt;/h1&gt;</span><br>
+        &nbsp;&nbsp;<span class="tg">&lt;marquee&gt;</span>I am a developer<span class="tg">&lt;/marquee&gt;</span><br>
+        &nbsp;&nbsp;<span class="cm">&lt;!-- TODO: make it look good --&gt;</span><br>
+        &nbsp;&nbsp;<span class="cm">&lt;!-- TODO: add some CSS maybe --&gt;</span><br>
+        &nbsp;&nbsp;<span class="cm">&lt;!-- TODO: what even is JavaScript --&gt;</span><br>
+        <span class="tg">&lt;/body&gt;</span><br>
+        <span class="tg">&lt;/html&gt;</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ DEBUGGING ══ -->
+<section id="debugging">
+  <div class="debug-container">
+    <div class="section-label reveal-text">Chapter 02</div>
+    <h2 class="section-heading reveal-text" style="font-size: clamp(2rem, 5vw, 4rem);">
+      The <em style="color:var(--red)">Debugging</em> Era<br>
+      <span style="color: var(--muted); font-size: 0.6em;">// aka: the rest of your career</span>
+    </h2>
+    <p class="section-body reveal-text" style="max-width: 600px;">
+      Stack Overflow opens faster than Stack Exchange. You've added 14 console.log statements 
+      and removed 12. The bug is, of course, a missing semicolon. You will never tell anyone.
+    </p>
+
+    <div class="error-terminal">
+      <div class="code-window-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <div class="code-window-title">TERMINAL — ERROR LOG</div>
+      </div>
+      <div id="errorLines">
+        <div class="error-line e-type"><span class="ln">1</span><span>TypeError: Cannot read properties of undefined (reading 'map')</span></div>
+        <div class="error-line e-file"><span class="ln">2</span><span>at App.js:47:22 &nbsp; (this is fine, totally fine)</span></div>
+        <div class="error-line e-note"><span class="ln">3</span><span>Note: You've been staring at this for 3 hours.</span></div>
+        <div class="error-line e-type"><span class="ln">4</span><span>ReferenceError: life is not defined</span></div>
+        <div class="error-line e-file"><span class="ln">5</span><span>at developer.js:1:1 &nbsp; (checks out)</span></div>
+        <div class="error-line e-note"><span class="ln">6</span><span>Suggestion: Have you tried console.log('here') ?</span></div>
+        <div class="error-line e-ok"><span class="ln">7</span><span>✓ Fixed by removing a semicolon. You're welcome.</span></div>
+      </div>
+    </div>
+
+    <div class="debug-stats">
+      <div class="stat-card" id="stat1">
+        <span class="stat-num" data-target="2847">0</span>
+        <div class="stat-label">Stack Overflow Tabs Opened</div>
+      </div>
+      <div class="stat-card" id="stat2">
+        <span class="stat-num" data-target="99">0</span>
+        <div class="stat-label">% of bugs caused by typos</div>
+      </div>
+      <div class="stat-card" id="stat3">
+        <span class="stat-num" data-target="0">0</span>
+        <div class="stat-label">Times "It Works On My Machine" failed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ DEADLINES ══ -->
+<section id="deadlines">
+  <div class="timeline" id="timeline">
+    <div class="section-label" style="padding-left:2.5rem;">Chapter 03</div>
+    <h2 class="section-heading" style="padding-left:2.5rem; margin-bottom: 3rem;">
+      Deadlines &amp;<br><em>Coffee</em>
+    </h2>
+    <div class="tl-item">
+      <div class="tl-time">Monday, 9:00 AM</div>
+      <div class="tl-title">The Brief Arrives</div>
+      <div class="tl-desc">"Simple feature, should take a day." You nod confidently. You have never been more wrong in your life.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">Wednesday, 2:00 PM</div>
+      <div class="tl-title">Scope Creep Begins</div>
+      <div class="tl-desc">"Also can we add dark mode, animations, and an AI chatbot?" Your eye twitches imperceptibly.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">Friday, 11:45 PM</div>
+      <div class="tl-title">3 Coffees Deep</div>
+      <div class="tl-desc">The keyboard is warm. The monitor hurts. You type <code style="color:var(--amber)">git push --force</code> into the void.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">Saturday, 2:17 AM</div>
+      <div class="tl-title">It Works™</div>
+      <div class="tl-desc">You don't know why it works. You're afraid to ask. You commit it and walk away slowly.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-time">Monday, 9:01 AM</div>
+      <div class="tl-title">Production is Down</div>
+      <div class="tl-desc">The feature worked perfectly on localhost. This was expected. You pretend to be surprised.</div>
+    </div>
+  </div>
+
+  <div class="coffee-widget" id="coffeeWidget">
+    <div class="coffee-cup">☕</div>
+    <div class="coffee-bar">
+      <div class="coffee-fill" id="coffeeFill" style="height:20%"></div>
+    </div>
+    <div class="coffee-label">Caffeine Level</div>
+  </div>
+</section>
+
+<!-- ══ INSIGHT ══ -->
+<section id="insight">
+  <div style="max-width:1000px; width:100%; z-index:1;">
+    <div class="section-label reveal-text" style="justify-content:center;">Chapter 04</div>
+    <h2 class="section-heading reveal-text" style="text-align:center; font-size: clamp(2rem,5vw,4rem);">
+      The <em>Wisdom</em> You<br>Actually Gain
+    </h2>
+    <p class="section-body reveal-text" style="text-align:center; max-width:550px; margin:0 auto 0;">
+      After the bugs, the caffeine, the Stack Overflow marathons — you emerge. Battle-tested. Slightly broken. Unexpectedly wise.
+    </p>
+    <div class="insight-grid">
+      <div class="insight-card">
+        <span class="insight-icon">🔥</span>
+        <div class="insight-title">It never "just works"</div>
+        <div class="insight-text">Every feature that seems simple hides three edge cases, two undocumented APIs, and one function someone wrote in 2011 that no one understands.</div>
+      </div>
+      <div class="insight-card">
+        <span class="insight-icon">☕</span>
+        <div class="insight-title">Coffee is not optional</div>
+        <div class="insight-text">It's not a habit. It's infrastructure. Like Redis for your brain. Without it, cache misses happen constantly and everything slows to a crawl.</div>
+      </div>
+      <div class="insight-card">
+        <span class="insight-icon">🚀</span>
+        <div class="insight-title">Ship it anyway</div>
+        <div class="insight-text">Perfect is the enemy of shipped. At some point you have to push to main, close your eyes, and trust in the rollback button.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CONCLUSION ══ -->
+<section id="conclusion">
+  <div style="z-index:1; display:flex; flex-direction:column; align-items:center;">
+    <div class="section-label reveal-text" style="justify-content:center;">// EOF</div>
+    <h2 class="conclusion-title" id="conclusionTitle">
+      Still Here?<br>
+      <span>You're a Dev.<span class="blink">_</span></span>
+    </h2>
+    <p class="conclusion-sub reveal-text">
+      You've survived undefined errors, impossible deadlines, and the inexplicable urge to rewrite everything in Rust. 
+      That makes you a real developer. Welcome to the guild.
+    </p>
+    <div class="btn-group" id="btnGroup">
+      <a href="#hero" class="btn btn-primary">↑ Restart Journey</a>
+      <a href="https://github.com" class="btn btn-outline" target="_blank">View on GitHub</a>
+    </div>
+    <div class="final-terminal" id="finalTerminal">
+      <span class="ok">✓ Story complete</span>
+      <span class="warn">⚠ Side effects may include: impostor syndrome, an unexplained love of mechanical keyboards</span>
+      <span class="ok">✓ You are now 0.1% more senior</span>
+      <span>$ <span class="blink">▋</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* ── Loader ── */
+const loaderMsgs = [
+  'npm install life --save',
+  'Resolving dependencies...',
+  'Installing imposter_syndrome@3.x',
+  'Warning: sleep deprecated',
+  'Loading coffee.js...',
+  'Booting experience...'
+];
+let loaderIdx = 0;
+const loaderBar = document.getElementById('loaderBar');
+const loaderText = document.getElementById('loaderText');
+const loaderInterval = setInterval(() => {
+  loaderIdx++;
+  if (loaderIdx < loaderMsgs.length) {
+    loaderText.textContent = loaderMsgs[loaderIdx];
+  }
+  gsap.to(loaderBar, { width: `${(loaderIdx / loaderMsgs.length) * 100}%`, duration: 0.4, ease: 'power2.out' });
+  if (loaderIdx >= loaderMsgs.length) {
+    clearInterval(loaderInterval);
+    setTimeout(() => {
+      gsap.to('#loader', { opacity: 0, duration: 0.6, ease: 'power2.inOut', onComplete: () => {
+        document.getElementById('loader').style.display = 'none';
+        initAnimations();
+      }});
+    }, 400);
+  }
+}, 320);
+
+/* ── Cursor ── */
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+gsap.ticker.add(() => {
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+});
+document.querySelectorAll('a, button, .insight-card, .tl-item').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.width = '20px'; cursor.style.height = '20px'; ring.style.opacity = '1'; ring.style.transform = 'translate(-50%,-50%) scale(1.5)'; });
+  el.addEventListener('mouseleave', () => { cursor.style.width = '12px'; cursor.style.height = '12px'; ring.style.opacity = '0.5'; ring.style.transform = 'translate(-50%,-50%) scale(1)'; });
+});
+
+/* ── Progress Bar ── */
+window.addEventListener('scroll', () => {
+  const p = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+  document.getElementById('progress').style.width = p + '%';
+});
+
+function initAnimations() {
+
+  /* ── Hero ── */
+  const heroTl = gsap.timeline();
+  heroTl
+    .to('#terminalLoader', { opacity: 1, duration: 0.4 })
+    .to('.hero-title', { opacity: 1, y: 0, duration: 1, ease: 'expo.out' }, '+=0.4')
+    .to('.hero-sub', { opacity: 1, duration: 0.6 }, '-=0.3')
+    .to('#scrollHint', { opacity: 1, duration: 0.6 }, '-=0.2')
+    .to('.float-code', { opacity: 1, stagger: 0.15, duration: 0.8 }, '-=0.4');
+
+  /* ── Parallax shapes ── */
+  gsap.to('.parallax-shape', {
+    y: -100,
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1.5 }
+  });
+
+  /* ── Floating code parallax ── */
+  document.querySelectorAll('.float-code').forEach((el, i) => {
+    gsap.to(el, {
+      y: (i % 2 === 0 ? -80 : -50),
+      x: (i % 2 === 0 ? -20 : 20),
+      scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1 + i * 0.3 }
+    });
+  });
+
+  /* ── Reveal texts ── */
+  gsap.utils.toArray('.reveal-text').forEach(el => {
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' }
+    });
+  });
+
+  /* ── Code windows ── */
+  gsap.to('#codeWindow1', {
+    opacity: 1, x: 0, duration: 1, ease: 'expo.out',
+    scrollTrigger: { trigger: '#codeWindow1', start: 'top 80%' }
+  });
+
+  /* ── Error lines ── */
+  gsap.utils.toArray('.error-line').forEach((el, i) => {
+    gsap.to(el, {
+      opacity: 1, x: 0, duration: 0.5, ease: 'power2.out', delay: i * 0.12,
+      scrollTrigger: { trigger: '#debugging', start: 'top 60%', toggleActions: 'play none none none' }
+    });
+  });
+
+  /* ── Stat counters ── */
+  gsap.utils.toArray('.stat-card').forEach((card, i) => {
+    const num = card.querySelector('.stat-num');
+    const target = parseInt(num.dataset.target);
+    ScrollTrigger.create({
+      trigger: card,
+      start: 'top 80%',
+      once: true,
+      onEnter: () => {
+        gsap.to(card, { opacity: 1, y: 0, duration: 0.6, delay: i * 0.15, ease: 'power3.out' });
+        gsap.to({ val: 0 }, {
+          val: target, duration: 2, ease: 'power2.out', delay: i * 0.15,
+          onUpdate: function() { num.textContent = Math.round(this.targets()[0].val).toLocaleString(); }
+        });
+      }
+    });
+  });
+
+  /* ── Timeline items ── */
+  gsap.utils.toArray('.tl-item').forEach((item, i) => {
+    gsap.to(item, {
+      opacity: 1, x: 0, duration: 0.7, ease: 'power3.out', delay: i * 0.12,
+      scrollTrigger: { trigger: item, start: 'top 85%', toggleActions: 'play none none none' }
+    });
+  });
+
+  /* ── Coffee fill parallax ── */
+  ScrollTrigger.create({
+    trigger: '#deadlines',
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: true,
+    onUpdate: self => {
+      document.getElementById('coffeeFill').style.height = (20 + self.progress * 75) + '%';
+    }
+  });
+
+  /* ── Insight cards ── */
+  gsap.utils.toArray('.insight-card').forEach((card, i) => {
+    gsap.to(card, {
+      opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', delay: i * 0.12,
+      scrollTrigger: { trigger: card, start: 'top 85%', toggleActions: 'play none none none' }
+    });
+  });
+
+  /* ── Conclusion ── */
+  gsap.to('#conclusionTitle', {
+    opacity: 1, scale: 1, duration: 1.2, ease: 'expo.out',
+    scrollTrigger: { trigger: '#conclusion', start: 'top 70%' }
+  });
+  gsap.to('#btnGroup', {
+    opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.4,
+    scrollTrigger: { trigger: '#conclusion', start: 'top 70%' }
+  });
+  gsap.to('#finalTerminal', {
+    opacity: 1, duration: 0.8, delay: 0.8,
+    scrollTrigger: { trigger: '#conclusion', start: 'top 70%' }
+  });
+
+  /* ── Sticky section: hero title shrinks on scroll ── */
+  gsap.to('.hero-title', {
+    scale: 0.92, opacity: 0.3,
+    scrollTrigger: { trigger: '#hero', start: 'center top', end: 'bottom top', scrub: 1 }
+  });
+}
+</script>
+</body>
+</html>
