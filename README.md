@@ -106,55 +106,6 @@ frontend-odyssey/
 
 ---
 
-## 🏆 Hackathon Details
-
-| Detail | Info |
-|---|---|
-| 🏫 Organizer | IIT Patna |
-| 🌐 Platform | Unstop |
-| 👤 Participant | Ramavath Babu |
-| 📧 Email | ramavathbabu137@gmail.com |
-| 🎯 Skills | UI Design · Frontend Development |
-| 📅 Submission Deadline | 28 Mar 2026 |
-| 👥 Registered | 1,460+ participants |
-
----
-
-## 💰 Prize Pool
-
-| Rank | Prize |
-|---|---|
-| 🥇 1st | ₹6,000 + Certificate |
-| 🥈 2nd | ₹3,750 + Certificate |
-| 🥉 3rd | ₹2,250 + Certificate |
-| 4th | ₹1,800 + Certificate |
-| 5th | ₹1,200 + Certificate |
-| All | Participation Certificate |
-
----
-
-## ⚖️ Judging Criteria
-
-| Criteria | Weight | How this project scores |
-|---|---|---|
-| 🎨 Creativity & Storytelling | 30% | Humorous 6-chapter dev narrative |
-| 🖼️ Visual Design | 25% | Dark theme, Syne + Space Mono fonts, glow effects |
-| ✨ Animation & Interactivity | 20% | GSAP + Three.js + 8 CSS animations |
-| 📱 Responsiveness | 15% | Mobile-first, tested on all screen sizes |
-| 💻 Code Quality | 10% | Clean single-file, well-commented |
-
----
-
-## 📞 Organizer Contacts
-
-| Name | Email | Phone |
-|---|---|---|
-| Nihar Ranjan Das | nihar_2403ce04@iitp.ac.in | +91 99547 95505 |
-| Pratishtha Singh | pratishtha_2401ec43@iitp.ac.in | +91 87070 79251 |
-| Abhinav Dutta | abhinav_2401cs30@iitp.ac.in | +91 80884 51391 |
-
----
-
 <div align="center">
   <p>Built with ☕ and too many console.log statements</p>
   <p><b>Ramavath Babu</b> · Frontend Odyssey · IIT Patna 2026</p>
