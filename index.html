@@ -44,7 +44,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:1rem 2rem;display:fl
 #threejs-bg{position:fixed;inset:0;z-index:0;pointer-events:none}
 
 /* SECTIONS */
-section{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:6rem 1.5rem;z-index:1}
+section{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:6rem 1.5rem;z-index:1;scroll-margin-top:60px}
 
 /* TICKER - CSS Animation 1 */
 .ticker-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:.65rem 0;background:var(--surface);position:relative;z-index:2}
@@ -197,7 +197,7 @@ section{min-height:100vh;display:flex;align-items:center;justify-content:center;
 <nav>
   <div class="nav-logo">DEV<span>.LIFE</span></div>
   <div class="nav-links">
-    <a href="#hero">Init</a>
+    <a href="#hero" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Init</a>
     <a href="#learning">Learn</a>
     <a href="#debugging">Debug</a>
     <a href="#deadlines">Deploy</a>
@@ -288,7 +288,6 @@ section{min-height:100vh;display:flex;align-items:center;justify-content:center;
     </div>
   </div>
 </section>
-
 
 <!-- DEBUGGING -->
 <section id="debugging">
